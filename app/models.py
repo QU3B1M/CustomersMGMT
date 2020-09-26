@@ -43,8 +43,10 @@ class Order(models.Model):
         ('Done', 'Done'),
     )
 
-    cutomer = models.ForeignKey(Customer, null=True, on_delete=models.SET_NULL)
+    customer = models.ForeignKey(Customer, null=True, on_delete=models.SET_NULL)
     product = models.ForeignKey(Product, null=True, on_delete=models.SET_NULL)
     status = models.CharField(max_length=150, null=True, choices=STATUS)
     date_created = models.DateTimeField(auto_now_add=True, null=True)
 
+    def __str__(self):
+        return "{}'s {}".format(self.customer.name, self.product.name) 
