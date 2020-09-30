@@ -62,10 +62,6 @@ def create_order(request, pk):
         formset = OrderFormSet(request.POST, instance=customer)
 
         if formset.is_valid():
-            # for form in formset:
-            #     product = form.cleaned_data.get('product')
-            #     status = form.cleaned_data.get('status')
-            #     Order(product=product, status=status, customer=customer).save()
             formset.save()
             return redirect('customer', pk=pk)
     
