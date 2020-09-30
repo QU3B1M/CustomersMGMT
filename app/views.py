@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.forms import inlineformset_factory
 from .models import *
 from .forms import OrderForm
+from .filters import OrderFilter
 
 
 def home(request):
@@ -37,35 +38,32 @@ def customer(request, pk):
     customer = Customer.objects.get(id=pk)
     orders = customer.order_set.all()
     orders_count = orders.count()
+    my_filter = OrderFilter(request.GET, queryset=orders)
+    orders = my_filter.qs
 
     context = {
         'customer':customer,
         'orders':orders,
-        'orders_count':orders_count
+        'orders_count':orders_count,
+        'my_filter': my_filter
     }
 
     return render(request, 'app/customer.html', context)
 
 
 def create_order(request, pk):
-    OrderFormSet = inlineformset_factory(Customer, Order, fields=('product', 'status'), extra=1)
+    OrderFormSet = inlineformset_factory(Customer, Order, fields=('product', 'status'), extra=1, can_delete=False)
     customer = Customer.objects.get(id=pk)
     formset = OrderFormSet(queryset=Order.objects.none(), instance=customer)
-    # form = OrderForm(initial={'customer': customer})
+    
     if request.method == 'GET':
-        formset = OrderFormSet(request.GET or None)    
+        formset = OrderFormSet(request.GET or None)
     elif request.method == 'POST':
-        # form = OrderForm(request.POST)
         formset = OrderFormSet(request.POST, instance=customer)
 
         if formset.is_valid():
-            for form in formset:
-                # extract name from each form and save
-                form.save()
-            # once all books are saved, redirect to book list view
-            # return redirect('book_list')
-            # formset.save()
-            return redirect('/')
+            formset.save()
+            return redirect('customer', pk=pk)
     
     context = {
         'formset': formset
@@ -90,20 +88,15 @@ def update_order(request, pk):
         'form': form
         }
     
-    return render(request, 'app/order_form.html', context)
+    return render(request, 'app/update_order_form.html', context)
 
 
 def delete_order(request, pk):
     
     order = Order.objects.get(id=pk)
-    # form = OrderForm(instance=order)
     
     if request.method == 'POST':
         order.delete()
-        # form = OrderForm(request.POST, instance=order)
-
-        # if form.is_valid():
-        #     form.save()
         return redirect('/')
     
     context = {
