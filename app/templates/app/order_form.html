@@ -1,24 +1,64 @@
 {% extends 'app/main.html' %}
 {% load static %}
+{% load crispy_forms_tags %}
 {% block content %}
 
 <div class="row">
     <div class="col-md-6">
         <div class="card card-body">
-            <form class="form-horizontal" action="" method="POST">
+            <form class="form-horizontal " id="form-container"action="" method="POST">
+              
                 {% csrf_token %}
                 {{ formset.management_form }}
                 {% for form in formset %}
-                    {{form}}
-                    <hr>
+                    <div class="order-form">
+                        <div class="row ">
+                            <div class="col-6">
+                                {{form.product|as_crispy_field}}
+                            </div>
+                            <div class="col-6">
+                                {{form.status|as_crispy_field}}
+                            </div>
+                        </div>
+                    </div>
                 {% endfor %}
-                {% comment %} <hr> {% endcomment %}
-                <a class="btn btn-primary" href="{% url 'home' %}">Cancel</a>
-                <input class="btn btn-success" type="submit" name="Submit" value="Confirm">
+                
+                    <button class="btn btn-info btn-sm" id="add-form" type="button">Add Another Order</button>
+                    <hr>
+                    <div>
+                        <a class="btn btn-primary" href="{{ request.META.HTTP_REFERER }}">Cancel</a>                        
+                        <input class="btn btn-success float-right" type="submit"  value="Confirm">
+                    </div>
             </form>
         </div>
     </div>
 </div>
 
+{% endblock %}
+
+{% block custom_js %}
+
+  <script>
+        let orderForm = document.querySelectorAll(".order-form")
+        let container = document.querySelector("#form-container")
+        let addButton = document.querySelector("#add-form")
+        let totalForms = document.querySelector("#id_order_set-TOTAL_FORMS")
+
+        let formNum = orderForm.length-1
+        addButton.addEventListener('click', addForm)
+
+        function addForm(e){
+            e.preventDefault()
+
+            let newForm = orderForm[0].cloneNode(true)
+            let formRegex = RegExp(`order_set-(\\d){1}-`,'g')
+
+            formNum++
+            newForm.innerHTML = newForm.innerHTML.replace(formRegex, `order_set-${formNum}-`)
+            container.insertBefore(newForm, addButton)
+            
+            totalForms.setAttribute('value', `${formNum+1}`)
+        }
+    </script>
 
 {% endblock %}
