@@ -44,8 +44,7 @@ def signup_login(request):
                     form.save()
                     user = form.cleaned_data.get('username')
                     messages.success(request, 'User {} was created successfully'.format(user))
-                else: 
-                    messages.error(request, 'Nope')
+             
                     
             elif request.POST.get('submit') == 'sign_in':
                 username = request.POST.get('username')
